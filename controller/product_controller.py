@@ -28,26 +28,25 @@ def get_categories():
 @product_bp.route('/categories', methods=['POST'])
 @jwt_required()
 def create_category():
-
+    """
+    POST /categories
+    Crea una nueva categoría.
+    """
     data = request.get_json()
     nombre = data.get('nombreCategoria')
     if not nombre:
         return jsonify({'error': 'El nombre de la categoría es obligatorio'}), 400
-    categoria = category_service.crear_categoria(nombre)
-    return jsonify({
-        'id': categoria.idCategory,
-        'nombreCategoria': categoria.nombreCategoria
-    }), 201
-
+    
     try:
-        producto = service.crear_producto(nombre, inventario, categoria_id)
+        categoria = category_service.crear_categoria(nombre)
         return jsonify({
-            "id": producto.idProduct,
-            "nombre": producto.nombre,
-            "inventario": producto.inventario,
-            "categoria_id": producto.categoria_id
+            'id': categoria.idCategory,
+            'nombreCategoria': categoria.nombreCategoria
         }), 201
     except ValueError as ve:
+        return jsonify({'error': str(ve)}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
         return jsonify({"error": str(ve)}), 400
     except Exception as e:
         return jsonify({"error": str(e)}), 500

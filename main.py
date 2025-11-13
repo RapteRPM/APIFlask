@@ -1,4 +1,4 @@
-from flask import Flask, send_from_directory
+from flask import Flask, jsonify
 from config.jwt import *
 from controller.product_controller import product_bp
 from controller.controller_user import user_bp, register_jwt_error_handlers
@@ -6,7 +6,7 @@ from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from config.db import Base, engine
 from models.models_user import User
-import os
+from models.product_models import Product, Category
 
 Base.metadata.create_all(bind=engine)
 app = Flask(__name__)
@@ -19,9 +19,8 @@ app.config['JWT_HEADER_NAME'] = JWT_HEADER_NAME
 app.config['JWT_HEADER_TYPE'] = JWT_HEADER_TYPE
 
 jwt = JWTManager(app)
-# Permitir CORS para desarrollo local (frontend estático en :8000)
+# Permitir CORS para desarrollo
 CORS(app)
-
 
 app.register_blueprint(product_bp)
 app.register_blueprint(user_bp)
@@ -32,11 +31,34 @@ register_jwt_error_handlers(app)
 
 @app.route("/")
 def index():
-    return send_from_directory('frontend', 'index.html')
-
-@app.route("/<path:path>")
-def static_files(path):
-    return send_from_directory('frontend', path)
+    """Endpoint principal de la API"""
+    return jsonify({
+        "message": "API de Gestión de Productos",
+        "version": "1.0",
+        "endpoints": {
+            "auth": {
+                "login": "POST /login",
+                "register": "POST /registry"
+            },
+            "products": {
+                "list": "GET /products",
+                "create": "POST /products", 
+                "get": "GET /products/<id>",
+                "update": "PUT /products/<id>",
+                "delete": "DELETE /products/<id>"
+            },
+            "categories": {
+                "list": "GET /categories",
+                "create": "POST /categories"
+            },
+            "users": {
+                "list": "GET /users",
+                "get": "GET /users/<id>",
+                "update": "PUT /users/<id>",
+                "delete": "DELETE /users/<id>"
+            }
+        }
+    })
 
 
 if __name__ == "__main__":

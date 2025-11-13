@@ -2,7 +2,10 @@ import os
 import logging
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
-from models.product_models import Base
+from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import declarative_base
+
+Base = declarative_base()
 
 logging.basicConfig(level=logging.INFO)
 

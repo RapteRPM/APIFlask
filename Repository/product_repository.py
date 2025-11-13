@@ -1,8 +1,6 @@
 from models.product_models import Product, Category
 from sqlalchemy.orm import Session
 from typing import Optional
-from models.product_models import Product 
-
 
 
 class ProductRepository:
@@ -21,14 +19,6 @@ class ProductRepository:
         self.db.commit()
         self.db.refresh(new_product)
         return new_product
-def update_product(
-    self,
-    product_id: int,
-    nombre: Optional[str] = None,
-    inventario: Optional[int] = None,
-    categoria_id: Optional[int] = None
-    ) -> Optional[Product]:
-    product = self.get_product_by_id(product_id)
 
     def update_product(self, product_id: int, nombre: str = None, inventario: int = None, categoria_id: int = None):
         product = self.get_product_by_id(product_id)
