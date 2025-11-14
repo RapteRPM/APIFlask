@@ -47,9 +47,6 @@ def create_category():
         return jsonify({'error': str(ve)}), 400
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-        return jsonify({"error": str(ve)}), 400
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 
 @product_bp.route('/products', methods=['GET'])

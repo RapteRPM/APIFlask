@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 from flask import Flask, jsonify
 from config.jwt import *
 from controller.product_controller import product_bp
@@ -7,6 +9,9 @@ from flask_cors import CORS
 from config.db import Base, engine
 from models.models_user import User
 from models.product_models import Product, Category
+
+# Cargar variables de entorno
+load_dotenv()
 
 Base.metadata.create_all(bind=engine)
 app = Flask(__name__)
@@ -21,9 +26,15 @@ app.config['JWT_HEADER_TYPE'] = JWT_HEADER_TYPE
 jwt = JWTManager(app)
 
 # Configuración CORS más específica para frontend
+cors_origins = ["*"] if os.getenv('FLASK_ENV') == 'development' else [
+    "https://*.railway.app",
+    "https://*.vercel.app", 
+    "https://*.netlify.app"
+]
+
 CORS(app, resources={
     r"/*": {
-        "origins": ["*"],  # Permitir todos los orígenes en desarrollo
+        "origins": cors_origins,
         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         "allow_headers": ["Content-Type", "Authorization"],
         "supports_credentials": True
@@ -83,4 +94,5 @@ def health_check():
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=True, port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', debug=False, port=port)
