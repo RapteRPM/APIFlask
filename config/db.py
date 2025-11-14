@@ -7,7 +7,11 @@ from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 
-logging.basicConfig(level=logging.INFO)
+# Configurar logging más silencioso para producción
+log_level = logging.WARNING if os.getenv('FLASK_ENV') == 'production' else logging.INFO
+logging.basicConfig(level=log_level)
+logging.getLogger('sqlalchemy.engine').setLevel(logging.WARNING)
+logging.getLogger('sqlalchemy.pool').setLevel(logging.WARNING)
 
 MYSQL_URI = os.getenv('MYSQL_URI')
 SQLITE_URI = 'sqlite:///product_local.db'
@@ -18,9 +22,12 @@ def get_engine():
     """
     Intenta crear una conexión con MySQL. Si falla, usa SQLite local.
     """
+    is_production = os.getenv('FLASK_ENV') == 'production'
+    echo_sql = False if is_production else True
+    
     if MYSQL_URI:
         try:
-            engine = create_engine(MYSQL_URI, echo=True)
+            engine = create_engine(MYSQL_URI, echo=echo_sql)
             conn = engine.connect()
             conn.close()
             logging.info('Conexión a MySQL exitosa.')
@@ -28,7 +35,7 @@ def get_engine():
         except OperationalError:
             logging.warning('No se pudo conectar a MySQL. Usando SQLite local.')
 
-    engine = create_engine(SQLITE_URI, echo=True)
+    engine = create_engine(SQLITE_URI, echo=echo_sql)
 
     """ Ejecutar el SQL del archivo database.sql """
     if os.path.exists(SCHEMA_SQL_PATH):
@@ -40,7 +47,7 @@ def get_engine():
                 if cmd:
                     conn.execute(text(cmd))
             conn.commit()
-        logging.info('Base de datos SQLite inicializada con datos de database.sql')
+        logging.info('Base de datos SQLite inicializada')
 
     return engine
 

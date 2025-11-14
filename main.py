@@ -1,17 +1,22 @@
 import os
+import logging
 from dotenv import load_dotenv
 from flask import Flask, jsonify
 from config.jwt import *
+from config.cors import configure_cors
 from controller.product_controller import product_bp
 from controller.controller_user import user_bp, register_jwt_error_handlers
 from flask_jwt_extended import JWTManager
-from flask_cors import CORS
 from config.db import Base, engine
 from models.models_user import User
 from models.product_models import Product, Category
 
 # Cargar variables de entorno
 load_dotenv()
+
+# Configurar logging para reducir verbosidad en producción
+logging.getLogger('sqlalchemy.engine').setLevel(logging.WARNING)
+logging.getLogger('werkzeug').setLevel(logging.INFO)
 
 Base.metadata.create_all(bind=engine)
 app = Flask(__name__)
@@ -25,21 +30,8 @@ app.config['JWT_HEADER_TYPE'] = JWT_HEADER_TYPE
 
 jwt = JWTManager(app)
 
-# Configuración CORS más específica para frontend
-cors_origins = ["*"] if os.getenv('FLASK_ENV') == 'development' else [
-    "https://*.railway.app",
-    "https://*.vercel.app", 
-    "https://*.netlify.app"
-]
-
-CORS(app, resources={
-    r"/*": {
-        "origins": cors_origins,
-        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        "allow_headers": ["Content-Type", "Authorization"],
-        "supports_credentials": True
-    }
-})
+# Configurar CORS para permitir peticiones desde diferentes dominios
+configure_cors(app)
 
 app.register_blueprint(product_bp)
 app.register_blueprint(user_bp)
