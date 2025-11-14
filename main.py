@@ -1,7 +1,7 @@
 import os
 import logging
 from dotenv import load_dotenv
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request, make_response
 from config.jwt import *
 from config.cors import configure_cors
 from controller.product_controller import product_bp
@@ -32,6 +32,17 @@ jwt = JWTManager(app)
 
 # Configurar CORS para permitir peticiones desde diferentes dominios
 configure_cors(app)
+
+# Middleware para asegurar headers CORS adicionales
+@app.after_request
+def set_cors_headers(response):
+    """Asegurar que todos los headers CORS requeridos estén presentes"""
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, PATCH, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+    response.headers['Access-Control-Expose-Headers'] = 'Content-Type, Authorization'
+    response.headers['Access-Control-Max-Age'] = '3600'
+    return response
 
 app.register_blueprint(product_bp)
 app.register_blueprint(user_bp)
