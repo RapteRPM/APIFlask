@@ -19,8 +19,16 @@ app.config['JWT_HEADER_NAME'] = JWT_HEADER_NAME
 app.config['JWT_HEADER_TYPE'] = JWT_HEADER_TYPE
 
 jwt = JWTManager(app)
-# Permitir CORS para desarrollo
-CORS(app)
+
+# Configuración CORS más específica para frontend
+CORS(app, resources={
+    r"/*": {
+        "origins": ["*"],  # Permitir todos los orígenes en desarrollo
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"],
+        "supports_credentials": True
+    }
+})
 
 app.register_blueprint(product_bp)
 app.register_blueprint(user_bp)
@@ -35,6 +43,8 @@ def index():
     return jsonify({
         "message": "API de Gestión de Productos",
         "version": "1.0",
+        "status": "active",
+        "cors_enabled": True,
         "endpoints": {
             "auth": {
                 "login": "POST /login",
@@ -58,6 +68,17 @@ def index():
                 "delete": "DELETE /users/<id>"
             }
         }
+    })
+
+
+@app.route("/api/health")
+def health_check():
+    """Endpoint para verificar el estado de la API"""
+    return jsonify({
+        "status": "healthy",
+        "timestamp": "2025-11-14",
+        "version": "1.0",
+        "cors": "enabled"
     })
 
 
